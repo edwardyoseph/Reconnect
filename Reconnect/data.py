@@ -3,6 +3,8 @@ import requests
 import time
 import psutil
 import os
+import aiofiles
+import asyncio
 
 # Webhook URL for Discord
 WEBHOOK_URL = os.getenv("WEBHOOK_URL")
@@ -151,21 +153,21 @@ def send_to_webhook(data):
 # Function to open Roblox and join private server using package name and private server link
 def open_roblox(pkg):
     print(f"Opening Roblox with package: {pkg}...")
-    
+
     # Open Roblox application with adb command
     run_adb_command(f"am start -n {pkg}/com.roblox.client.startup.ActivitySplash")
     time.sleep(15)  # Wait for Roblox to launch
 
-# Function to update the log file
-def update_log_file(data):
-    with open(log_file_path, 'w') as log_file:
+# Function to update the log file using aiofiles (asynchronous I/O)
+async def update_log_file(data):
+    async with aiofiles.open(log_file_path, 'w') as log_file:
         for user, user_data in data.items():
-            log_file.write(f"Username: {user_data['username']}\n")
-            log_file.write(f"UserId: {user_data['user_id']}\n")
-            log_file.write(f"PID: {user_data['pid']}\n")
-            log_file.write(f"ClientName: {user_data['client_name']}\n")
-            log_file.write(f"Status: {user_data['status']}\n")
-            log_file.write("-" * 50 + "\n")
+            await log_file.write(f"Username: {user_data['username']}\n")
+            await log_file.write(f"UserId: {user_data['user_id']}\n")
+            await log_file.write(f"PID: {user_data['pid']}\n")
+            await log_file.write(f"ClientName: {user_data['client_name']}\n")
+            await log_file.write(f"Status: {user_data['status']}\n")
+            await log_file.write("-" * 50 + "\n")
 
 # Find all packages related to Roblox (client)
 pkg_command = "pm list packages | grep -i 'com.roblox'"
@@ -178,11 +180,11 @@ for pkg in pkg_output.splitlines():
 
     # Open Roblox and join private server
     open_roblox(client_pkg)
-    
+
     # Find the PID of the running client
     pid_command = f"pgrep -f {client_pkg}"
     pid_output = run_adb_command(pid_command).strip()
-    
+
     if pid_output:
         pid = pid_output
         print(f"Client: {client_pkg} (PID: {pid})")
@@ -224,7 +226,7 @@ send_to_webhook(data_buffer)
 last_sent_time = time.time()
 while True:
     time.sleep(30)  # Wait for 10 seconds before updating status
-    
+
     # Update user status and log it every 5 seconds
     for user, data in data_buffer.items():
         updated_status = get_user_status(data["user_id"])
@@ -233,7 +235,7 @@ while True:
             data["status"] = updated_status
 
     # Update the log file every 5 seconds
-    update_log_file(data_buffer)
+    asyncio.run(update_log_file(data_buffer))
 
     # Send data to webhook every 5 minute
     if time.time() - last_sent_time >= 300:
