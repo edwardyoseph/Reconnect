@@ -2,9 +2,10 @@ import subprocess
 import requests
 import time
 import psutil
+import os
 
 # Webhook URL for Discord
-WEBHOOK_URL = "https://discord.com/api/webhooks/1444621772870783016/zGgY3sRh6cTKUc3xuV3r_xY61VAH18JajRI_vFT1W40IqOHrUYD1EhhwBk6pfpqbgADd"
+WEBHOOK_URL = os.getenv("WEBHOOK_URL")
 
 # Array to store collected data temporarily
 data_buffer = {}
@@ -142,6 +143,8 @@ def send_to_webhook(data):
 
     if r.status_code == 204:
         print("✔ Embed sent successfully.")
+        time.sleep(2)
+        print("⏳ Waiting for next update...")
     else:
         print("❌ Failed to send embed:", r.status_code, r.text)
 
@@ -151,7 +154,7 @@ def open_roblox(pkg):
     
     # Open Roblox application with adb command
     run_adb_command(f"am start -n {pkg}/com.roblox.client.startup.ActivitySplash")
-    time.sleep(10)  # Wait for Roblox to launch
+    time.sleep(15)  # Wait for Roblox to launch
 
 # Function to update the log file
 def update_log_file(data):
