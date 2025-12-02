@@ -22,6 +22,8 @@ while true; do
     do
         [ -z "$CLIENT" ] && continue
 
+        echo "Bot: $USER | Package: $CLIENT | Status: $STATUS"
+
         if [ "$STATUS" = "Offline" ]; then
             echo "[OFFLINE] Restart Roblox + Join PS"
             
@@ -42,4 +44,5 @@ while true; do
     done
     sleep 30
 done
+
 
