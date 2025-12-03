@@ -4,7 +4,6 @@ LOG_FILE="/sdcard/log.txt"   # Lokasi file log
 ACT="com.roblox.client.startup.ActivitySplash"
 
 while true; do
-    echo "SCANNING DATA"
 
     # Mengambil blok per bot dari file log
     awk -v RS="--------------------------------------------------" '
@@ -21,8 +20,6 @@ while true; do
     }' "$LOG_FILE" | while IFS="|" read -r USER CLIENT STATUS
     do
         [ -z "$CLIENT" ] && continue
-
-        echo "Bot: $USER | Package: $CLIENT | Status: $STATUS"
 
         if [ "$STATUS" = "Offline" ]; then
             echo "[OFFLINE] Restart Roblox + Join PS"
@@ -44,5 +41,6 @@ while true; do
     done
     sleep 30
 done
+
 
 
